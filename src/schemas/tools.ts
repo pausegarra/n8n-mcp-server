@@ -43,6 +43,10 @@ export const deactivateWorkflowInputSchema = z.object({
   workflowId: z.string().min(1),
 });
 
+export const deleteWorkflowInputSchema = z.object({
+  workflowId: z.string().min(1),
+});
+
 export const listExecutionsInputSchema = z.object({
   workflowId: z.string().optional(),
   status: z.enum(["canceled", "crashed", "error", "new", "running", "success", "unknown", "waiting"]).optional(),

@@ -33,6 +33,10 @@ export class N8nApiClient {
     return this.request("POST", `/api/v1/workflows/${encodeURIComponent(workflowId)}/deactivate`);
   }
 
+  async deleteWorkflow(workflowId: string) {
+    return this.request("DELETE", `/api/v1/workflows/${encodeURIComponent(workflowId)}`);
+  }
+
   async listExecutions(query: Record<string, unknown>) {
     return this.request("GET", "/api/v1/executions", undefined, query);
   }

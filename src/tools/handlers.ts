@@ -6,6 +6,7 @@ import {
   activateWorkflowInputSchema,
   createWorkflowInputSchema,
   deactivateWorkflowInputSchema,
+  deleteWorkflowInputSchema,
   getExecutionInputSchema,
   getWorkflowInputSchema,
   listExecutionsInputSchema,
@@ -21,6 +22,7 @@ export const TOOL_NAMES = [
   "update_workflow",
   "activate_workflow",
   "deactivate_workflow",
+  "delete_workflow",
   "list_executions",
   "get_execution",
 ] as const;
@@ -64,6 +66,11 @@ export async function callTool(
       case "deactivate_workflow": {
         const input = deactivateWorkflowInputSchema.parse(args ?? {});
         const data = await client.deactivateWorkflow(input.workflowId);
+        return ok(data, requestId);
+      }
+      case "delete_workflow": {
+        const input = deleteWorkflowInputSchema.parse(args ?? {});
+        const data = await client.deleteWorkflow(input.workflowId);
         return ok(data, requestId);
       }
       case "list_executions": {

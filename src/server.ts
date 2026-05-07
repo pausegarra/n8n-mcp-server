@@ -9,6 +9,7 @@ import {
   activateWorkflowInputSchema,
   createWorkflowInputSchema,
   deactivateWorkflowInputSchema,
+  deleteWorkflowInputSchema,
   getExecutionInputSchema,
   getWorkflowInputSchema,
   listExecutionsInputSchema,
@@ -68,6 +69,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
         name: "deactivate_workflow",
         description: "Deactivate workflow by workflow ID",
         inputSchema: schemaToJson(deactivateWorkflowInputSchema),
+      },
+      {
+        name: "delete_workflow",
+        description: "Delete workflow by workflow ID",
+        inputSchema: schemaToJson(deleteWorkflowInputSchema),
       },
       {
         name: "list_executions",

@@ -8,6 +8,7 @@ const mockClient = {
   updateWorkflow: async (id: string, patch: unknown) => ({ id, patch }),
   activateWorkflow: async (id: string) => ({ id, active: true }),
   deactivateWorkflow: async (id: string) => ({ id, active: false }),
+  deleteWorkflow: async (id: string) => ({ id, deleted: true }),
   listExecutions: async () => ({ items: [], nextCursor: null }),
   getExecution: async (id: string) => ({ id }),
 };
@@ -128,6 +129,19 @@ describe("tool handlers", () => {
 
     expect(result.ok).toBe(true);
     expect(updateWorkflow).toHaveBeenCalledWith("wf-1", workflow);
+  });
+
+  it("deletes workflow by ID", async () => {
+    const deleteWorkflow = vi.fn(async (id: string) => ({ id, deleted: true }));
+
+    const result = await callTool(
+      { ...mockClient, deleteWorkflow } as never,
+      "delete_workflow",
+      { workflowId: "wf-1" },
+    );
+
+    expect(result.ok).toBe(true);
+    expect(deleteWorkflow).toHaveBeenCalledWith("wf-1");
   });
 
   it("accepts OpenAPI execution filters", async () => {

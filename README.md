@@ -10,6 +10,7 @@ Agent-agnostic MCP server for n8n.
 - `update_workflow`
 - `activate_workflow`
 - `deactivate_workflow`
+- `delete_workflow`
 - `list_executions`
 - `get_execution`
 
