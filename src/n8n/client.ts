@@ -13,20 +13,20 @@ export class N8nApiClient {
     return this.request("GET", "/api/v1/workflows", undefined, query);
   }
 
-  async getWorkflow(workflowId: string) {
-    return this.request("GET", `/api/v1/workflows/${encodeURIComponent(workflowId)}`);
+  async getWorkflow(workflowId: string, query?: Record<string, unknown>) {
+    return this.request("GET", `/api/v1/workflows/${encodeURIComponent(workflowId)}`, undefined, query);
   }
 
   async createWorkflow(payload: Record<string, unknown>) {
     return this.request("POST", "/api/v1/workflows", payload);
   }
 
-  async updateWorkflow(workflowId: string, patch: Record<string, unknown>) {
-    return this.request("PATCH", `/api/v1/workflows/${encodeURIComponent(workflowId)}`, patch);
+  async updateWorkflow(workflowId: string, workflow: Record<string, unknown>) {
+    return this.request("PUT", `/api/v1/workflows/${encodeURIComponent(workflowId)}`, workflow);
   }
 
-  async activateWorkflow(workflowId: string) {
-    return this.request("POST", `/api/v1/workflows/${encodeURIComponent(workflowId)}/activate`);
+  async activateWorkflow(workflowId: string, body?: Record<string, unknown>) {
+    return this.request("POST", `/api/v1/workflows/${encodeURIComponent(workflowId)}/activate`, body);
   }
 
   async deactivateWorkflow(workflowId: string) {
@@ -37,7 +37,7 @@ export class N8nApiClient {
     return this.request("GET", "/api/v1/executions", undefined, query);
   }
 
-  async getExecution(executionId: string, includeData: boolean) {
+  async getExecution(executionId: number, includeData: boolean) {
     return this.request(
       "GET",
       `/api/v1/executions/${encodeURIComponent(executionId)}`,
@@ -55,11 +55,14 @@ export class N8nApiClient {
     const url = new URL(path, this.config.baseUrl);
     if (query) {
       for (const [key, value] of Object.entries(query)) {
-        if (value === undefined || value === null) {
+        if (value === undefined || value === null || value === "") {
           continue;
         }
         if (Array.isArray(value)) {
           for (const item of value) {
+            if (item === undefined || item === null || item === "") {
+              continue;
+            }
             url.searchParams.append(key, String(item));
           }
           continue;

@@ -38,11 +38,11 @@ export async function callTool(
       case "list_workflows": {
         const input = listWorkflowsInputSchema.parse(args ?? {});
         const data = await client.listWorkflows(input);
-        return ok(data, requestId, extractCursor(data));
+        return ok(summarizeWorkflowList(data), requestId, extractCursor(data));
       }
       case "get_workflow": {
         const input = getWorkflowInputSchema.parse(args ?? {});
-        const data = await client.getWorkflow(input.workflowId);
+        const data = await client.getWorkflow(input.workflowId, { excludePinnedData: input.excludePinnedData });
         return ok(data, requestId);
       }
       case "create_workflow": {
@@ -52,15 +52,13 @@ export async function callTool(
       }
       case "update_workflow": {
         const input = updateWorkflowInputSchema.parse(args ?? {});
-        const data = await client.updateWorkflow(input.workflowId, {
-          ...input.patch,
-          ...(input.version ? { version: input.version } : {}),
-        });
+        const data = await client.updateWorkflow(input.workflowId, input.workflow as unknown as Record<string, unknown>);
         return ok(data, requestId);
       }
       case "activate_workflow": {
         const input = activateWorkflowInputSchema.parse(args ?? {});
-        const data = await client.activateWorkflow(input.workflowId);
+        const { workflowId, ...body } = input;
+        const data = await client.activateWorkflow(workflowId, Object.keys(body).length ? body : undefined);
         return ok(data, requestId);
       }
       case "deactivate_workflow": {
@@ -71,7 +69,7 @@ export async function callTool(
       case "list_executions": {
         const input = listExecutionsInputSchema.parse(args ?? {});
         const data = await client.listExecutions(input);
-        return ok(data, requestId, extractCursor(data));
+        return ok(summarizeExecutionList(data), requestId, extractCursor(data));
       }
       case "get_execution": {
         const input = getExecutionInputSchema.parse(args ?? {});
@@ -125,4 +123,140 @@ function extractCursor(data: unknown): string | null {
     return typeof value === "string" ? value : null;
   }
   return null;
+}
+
+function summarizeWorkflowList(data: unknown): unknown {
+  if (!data || typeof data !== "object") {
+    return data;
+  }
+
+  const record = data as Record<string, unknown>;
+  const rawItems = Array.isArray(record.items)
+    ? record.items
+    : Array.isArray(record.data)
+      ? record.data
+      : record.items;
+  const items = Array.isArray(rawItems) ? rawItems.map((item) => summarizeWorkflowItem(item)) : rawItems;
+
+  return {
+    items,
+    nextCursor: typeof record.nextCursor === "string" ? record.nextCursor : null,
+    total: typeof record.total === "number" ? record.total : undefined,
+  };
+}
+
+function summarizeWorkflowItem(item: unknown): unknown {
+  if (!item || typeof item !== "object") {
+    return item;
+  }
+
+  const workflow = item as Record<string, unknown>;
+  return {
+    id: asString(workflow.id),
+    name: asString(workflow.name),
+    active: asBoolean(workflow.active),
+    isArchived: asBoolean(workflow.isArchived),
+    createdAt: asString(workflow.createdAt),
+    updatedAt: asString(workflow.updatedAt),
+    tags: summarizeTags(workflow.tags),
+    versionId: asString(workflow.versionId),
+  };
+}
+
+function summarizeTags(tags: unknown): string[] | null {
+  if (!Array.isArray(tags)) {
+    return null;
+  }
+
+  return tags
+    .map((tag) => {
+      if (!tag || typeof tag !== "object") {
+        return null;
+      }
+      const name = (tag as Record<string, unknown>).name;
+      return typeof name === "string" ? name : null;
+    })
+    .filter((name): name is string => Boolean(name));
+}
+
+function asString(value: unknown): string | null {
+  return typeof value === "string" ? value : null;
+}
+
+function asBoolean(value: unknown): boolean | null {
+  return typeof value === "boolean" ? value : null;
+}
+
+function summarizeExecutionList(data: unknown): unknown {
+  if (!data || typeof data !== "object") {
+    return data;
+  }
+
+  const record = data as Record<string, unknown>;
+  const rawItems = Array.isArray(record.items)
+    ? record.items
+    : Array.isArray(record.data)
+      ? record.data
+      : record.items;
+  const items = Array.isArray(rawItems) ? rawItems.map((item) => summarizeExecutionItem(item)) : rawItems;
+
+  return {
+    items,
+    nextCursor: typeof record.nextCursor === "string" ? record.nextCursor : null,
+    total: typeof record.total === "number" ? record.total : undefined,
+  };
+}
+
+function summarizeExecutionItem(item: unknown): unknown {
+  if (!item || typeof item !== "object") {
+    return item;
+  }
+
+  const execution = item as Record<string, unknown>;
+  return {
+    id: asString(execution.id),
+    workflowId: asString(execution.workflowId),
+    status: asString(execution.status),
+    mode: asString(execution.mode),
+    startedAt: asString(execution.startedAt),
+    stoppedAt: asString(execution.stoppedAt),
+    finished: asBoolean(execution.finished),
+    retryOf: asString(execution.retryOf),
+    retrySuccessId: asString(execution.retrySuccessId),
+    waitTill: asString(execution.waitTill),
+    createdAt: asString(execution.createdAt),
+    updatedAt: asString(execution.updatedAt),
+    deletedAt: asString(execution.deletedAt),
+    workflowName: asString(execution.workflowName),
+    projectId: asString(execution.projectId),
+    runDataCount: summarizeRunDataCount(execution.data),
+    lastNodeExecuted: summarizeLastNodeExecuted(execution.data),
+  };
+}
+
+function summarizeRunDataCount(data: unknown): number | null {
+  if (!data || typeof data !== "object") {
+    return null;
+  }
+  const resultData = (data as Record<string, unknown>).resultData;
+  if (!resultData || typeof resultData !== "object") {
+    return null;
+  }
+  const runData = (resultData as Record<string, unknown>).runData;
+  if (!runData || typeof runData !== "object") {
+    return null;
+  }
+  return Object.keys(runData as Record<string, unknown>).length;
+}
+
+function summarizeLastNodeExecuted(data: unknown): string | null {
+  if (!data || typeof data !== "object") {
+    return null;
+  }
+  const resultData = (data as Record<string, unknown>).resultData;
+  if (!resultData || typeof resultData !== "object") {
+    return null;
+  }
+  const lastNodeExecuted = (resultData as Record<string, unknown>).lastNodeExecuted;
+  return asString(lastNodeExecuted);
 }
