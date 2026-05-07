@@ -2,7 +2,7 @@ import "dotenv/config";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
-import { zodToJsonSchema } from "zod-to-json-schema";
+import { z } from "zod";
 import { getConfig } from "./config.js";
 import { N8nApiClient } from "./n8n/client.js";
 import {
@@ -41,7 +41,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
     tools: [
       {
         name: "list_workflows",
-        description: "List n8n workflows with optional filters and pagination",
+        description: "List n8n workflows with optional filters and pagination (LLM-friendly summarized output)",
         inputSchema: schemaToJson(listWorkflowsInputSchema),
       },
       {
@@ -71,7 +71,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: "list_executions",
-        description: "List executions with optional filters and pagination",
+        description: "List executions with optional filters and pagination (LLM-friendly summarized output)",
         inputSchema: schemaToJson(listExecutionsInputSchema),
       },
       {
@@ -121,6 +121,6 @@ async function main() {
 
 void main();
 
-function schemaToJson(schema: unknown): unknown {
-  return zodToJsonSchema(schema as never);
+function schemaToJson(schema: z.ZodType): unknown {
+  return z.toJSONSchema(schema);
 }
