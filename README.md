@@ -14,11 +14,16 @@ Agent-agnostic MCP server for n8n.
 - `list_executions`
 - `get_execution`
 
-## Setup
+## Installation
+
+Download and extract the latest release:
 
 ```bash
-npm install
+curl -L -o n8n-mcp-server.zip https://github.com/pausegarra/n8n-mcp-server/releases/latest/download/n8n-mcp-server.zip
+unzip n8n-mcp-server.zip -d n8n-mcp-server
 ```
+
+## Configuration
 
 Create `.env` from example:
 
@@ -32,6 +37,14 @@ Or export env vars manually:
 export N8N_BASE_URL="https://your-n8n.example.com"
 export N8N_API_KEY="your_api_key"
 export N8N_TIMEOUT_MS="10000"
+```
+
+## Development
+
+Install dependencies:
+
+```bash
+npm install
 ```
 
 Run dev:
@@ -68,5 +81,5 @@ All tools return JSON string with stable shape:
 
 - No agent-specific prompt coupling.
 - Input validated via Zod.
-- JSON Schema exported with `zod-to-json-schema`.
+- JSON Schema exported with `z.toJSONSchema`.
 - Retries only for transient upstream errors (`429` and `5xx`).
