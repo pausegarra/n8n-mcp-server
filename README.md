@@ -25,18 +25,30 @@ unzip n8n-mcp-server.zip -d n8n-mcp-server
 
 ## Configuration
 
-Create `.env` from example:
+The server does not read `.env` files. Environment variables must be passed by the MCP client.
 
-```bash
-cp .env.example .env
-```
+### Variables
 
-Or export env vars manually:
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `N8N_BASE_URL` | Yes | n8n instance URL (e.g. `https://your-n8n.example.com`) |
+| `N8N_API_KEY` | Yes | n8n API key |
+| `N8N_TIMEOUT_MS` | No | Request timeout in ms (default: `10000`) |
 
-```bash
-export N8N_BASE_URL="https://your-n8n.example.com"
-export N8N_API_KEY="your_api_key"
-export N8N_TIMEOUT_MS="10000"
+### Example (opencode)
+
+```json
+"mcp": {
+  "n8n": {
+    "type": "local",
+    "enabled": true,
+    "command": ["node", "/path/to/n8n-mcp-server/dist/server.js"],
+    "environment": {
+      "N8N_BASE_URL": "https://your-n8n.example.com",
+      "N8N_API_KEY": "your_api_key"
+    }
+  }
+}
 ```
 
 ## Development
