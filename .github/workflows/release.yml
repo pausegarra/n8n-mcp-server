@@ -14,25 +14,42 @@ jobs:
         with:
           node-version: 20
           cache: npm
-      - run: npm ci --omit=dev
+      - run: npm ci
       - run: npm run build
       - uses: actions/upload-artifact@v4
         with:
-          name: release-assets
+          name: dist
+          path: dist/server.js
+
+  prod-deps:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci --omit=dev
+      - uses: actions/upload-artifact@v4
+        with:
+          name: prod-deps
           path: |
-            dist/server.js
             node_modules/
             package.json
 
   release:
-    needs: build
+    needs: [build, prod-deps]
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: release-assets
+          name: dist
+          path: release-staging/dist
+      - uses: actions/download-artifact@v4
+        with:
+          name: prod-deps
           path: release-staging
       - run: cd release-staging && zip -r ../n8n-mcp-server.zip .
       - uses: softprops/action-gh-release@v2
