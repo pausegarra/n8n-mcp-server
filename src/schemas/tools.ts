@@ -18,18 +18,55 @@ export const getWorkflowInputSchema = z.object({
   excludePinnedData: z.boolean().optional(),
 });
 
-export const createWorkflowInputSchema = z.object({
+export const workflowSchema = z.object({
   name: z.string().min(1),
-  nodes: z.array(z.record(z.string(), z.unknown())),
-  connections: z.record(z.string(), z.unknown()),
-  settings: z.record(z.string(), z.unknown()),
-  staticData: z.union([z.string(), z.record(z.string(), z.unknown()), z.null()]).optional(),
-  shared: z.array(z.record(z.string(), z.unknown())).optional(),
-});
+  nodes: z.array(
+    z.record(z.string(), z.unknown())
+  ),
+  connections: z.record(
+    z.string(),
+    z.unknown()
+  ),
+  settings: z.record(
+    z.string(),
+    z.unknown()
+  ),
+  staticData: z.union([
+    z.string(),
+    z.record(z.string(), z.unknown()),
+    z.null(),
+  ]).optional(),
+  shared: z.array(
+    z.record(z.string(), z.unknown())
+  ).optional(),
+}).loose();
+
+export const createWorkflowInputSchema = workflowSchema;
 
 export const updateWorkflowInputSchema = z.object({
   workflowId: z.string().min(1),
-  workflow: createWorkflowInputSchema,
+  workflow: z.object({
+    name: z.string().min(1).optional(),
+    nodes: z.array(
+      z.record(z.string(), z.unknown())
+    ).optional(),
+    connections: z.record(
+      z.string(),
+      z.unknown()
+    ).optional(),
+    settings: z.record(
+      z.string(),
+      z.unknown()
+    ).optional(),
+    staticData: z.union([
+      z.string(),
+      z.record(z.string(), z.unknown()),
+      z.null(),
+    ]).optional(),
+    shared: z.array(
+      z.record(z.string(), z.unknown())
+    ).optional(),
+  }).loose(),
 });
 
 export const activateWorkflowInputSchema = z.object({
