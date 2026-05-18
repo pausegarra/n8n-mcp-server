@@ -23,6 +23,12 @@ curl -L -o n8n-mcp-server.zip https://github.com/pausegarra/n8n-mcp-server/relea
 unzip n8n-mcp-server.zip -d n8n-mcp-server
 ```
 
+Install skill:
+
+```bash
+npx skills@latest install https://github.com/pausegarra/skills.git n8n-mcp-server
+```
+
 ## Configuration
 
 The server does not read `.env` files. Environment variables must be passed by the MCP client.
